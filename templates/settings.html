@@ -1,24 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
-<h3 class="mb-4">Company Settings</h3>
-<form method="POST" class="card p-4 shadow-sm" style="max-width:500px;">
-  {{ form.hidden_tag() }}
-  <div class="mb-3">
-    {{ form.name.label(class="form-label") }}
-    {{ form.name(class="form-control") }}
-  </div>
-  <div class="mb-3">
-    {{ form.country.label(class="form-label") }}
-    {{ form.country(class="form-select") }}
-  </div>
-  <div class="mb-3">
-    {{ form.currency.label(class="form-label") }}
-    {{ form.currency(class="form-select") }}
-  </div>
-  <div class="mb-3">
-    {{ form.opening_balance.label(class="form-label") }}
-    {{ form.opening_balance(class="form-control", placeholder="Enter opening balance") }}
+<div class="container mt-4">
+  <h3>Company Settings</h3>
+  <form method="POST">
+    <div class="mb-3">
+      <label>Company Name</label>
+      <input type="text" name="name" class="form-control" value="{{ company.name }}" required>
+    </div>
+    <div class="mb-3">
+      <label>Country</label>
+      <input type="text" name="country" class="form-control" value="{{ company.country }}">
+    </div>
+    <div class="mb-3">
+      <label>Currency</label>
+      <input type="text" name="currency" class="form-control" value="{{ company.currency }}">
+    </div>
+    <div class="mb-3">
+      <label>Opening Balance</label>
+      <input type="number" step="0.01" name="opening_balance" class="form-control" value="{{ company.opening_balance }}">
+    </div>
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+  </form>
+
+  <hr>
+  <h5>Manage Users</h5>
+  <a href="{{ url_for('company_users') }}" class="btn btn-primary">View Users</a>
+  <a href="{{ url_for('company_user_new') }}" class="btn btn-success">
+    <i class="fa-solid fa-user-plus"></i> Add New User</a>
 </div>
-  <button class="btn btn-success">Save Changes</button>
-</form>
 {% endblock %}
