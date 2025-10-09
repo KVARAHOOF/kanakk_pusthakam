@@ -15,6 +15,10 @@
         {{ form.currency.label }} {{ form.currency(class="form-select") }}
       </div>
     </div>
+    <div class="mb-3">
+      {{ form.opening_balance.label(class="form-label") }}
+      {{ form.opening_balance(class="form-control", placeholder="Enter opening balance") }}
+    </div>
     <hr>
     <div class="mb-2">
       {{ form.email.label }} {{ form.email(class="form-control") }}
