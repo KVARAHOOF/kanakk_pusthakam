@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h3>👥 Company Users</h3>
+  <a href="{{ url_for('company_user_new') }}" class="btn btn-primary mb-3">
+    <i class="fa-solid fa-user-plus"></i> Add New User
+  </a>
+
+  <table class="table table-striped">
+    <thead class="table-primary">
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.phone }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+          <a href="{{ url_for('company_user_edit', user_id=user.id) }}" class="btn btn-sm btn-warning">Edit</a>
+          <a href="{{ url_for('company_user_delete', user_id=user.id) }}" class="btn btn-sm btn-danger"
+             onclick="return confirm('Are you sure?')">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

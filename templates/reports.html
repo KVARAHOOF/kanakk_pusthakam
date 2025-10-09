@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Reports</h3>
+<form method="GET" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label class="form-label">Start Date</label>
+        <input type="date" name="start" value="{{ request.args.get('start', current_date) }}" class="form-control">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">End Date</label>
+        <input type="date" name="end" value="{{ request.args.get('end', current_date) }}" class="form-control">
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+    </div>
+</form>
+
+<h5>Income ({{ comp.currency }}) - Total: {{ '%.2f'|format(total_income) }}</h5>
+<table class="table table-sm">
+  <thead><tr><th>Date</th><th>Title</th><th>Amount</th></tr></thead>
+  <tbody>
+    {% for i in incomes %}
+      <tr><td>{{ i.date }}</td><td>{{ i.title }}</td><td>{{ '%.2f'|format(i.amount) }}</td></tr>
+    {% else %}
+      <tr><td colspan="4">No records</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h5>Expense ({{ comp.currency }}) - Total: {{ '%.2f'|format(total_expense) }}</h5>
+<table class="table table-sm">
+  <thead><tr><th>Date</th><th>Title</th><th>Amount</th></tr></thead>
+  <tbody>
+    {% for e in expenses %}
+      <tr><td>{{ e.date }}</td><td>{{ e.title }}</td><td>{{ '%.2f'|format(e.amount) }}</td></tr>
+    {% else %}
+      <tr><td colspan="4">No records</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

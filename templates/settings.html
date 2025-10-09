@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-4">Company Settings</h3>
+<form method="POST" class="card p-4 shadow-sm" style="max-width:500px;">
+  {{ form.hidden_tag() }}
+  <div class="mb-3">
+    {{ form.name.label(class="form-label") }}
+    {{ form.name(class="form-control") }}
+  </div>
+  <div class="mb-3">
+    {{ form.country.label(class="form-label") }}
+    {{ form.country(class="form-select") }}
+  </div>
+  <div class="mb-3">
+    {{ form.currency.label(class="form-label") }}
+    {{ form.currency(class="form-select") }}
+  </div>
+  <div class="mb-3">
+    {{ form.opening_balance.label(class="form-label") }}
+    {{ form.opening_balance(class="form-control", placeholder="Enter opening balance") }}
+</div>
+  <button class="btn btn-success">Save Changes</button>
+</form>
+{% endblock %}

@@ -1,0 +1,34 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Sidebar toggle */
+#wrapper.toggled #sidebar-wrapper {
+  margin-left: -250px;
+}
+
+#sidebar-wrapper {
+  width: 250px;
+  min-height: 100vh;
+  transition: all 0.3s;
+}
+
+#page-content-wrapper {
+  flex: 1;
+}
+
+.list-group-item:hover {
+  background-color: #0d6efd;
+  color: white !important;
+}
+
+/* Navbar shadow */
+.navbar {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Hover effect for cards */
+.hover-scale:hover {
+  transform: scale(1.05);
+  transition: all 0.2s ease-in-out;
+}

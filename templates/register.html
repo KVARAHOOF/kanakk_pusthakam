@@ -1,0 +1,36 @@
+{% extends "auth_base.html" %}
+{% block content %}
+<div class="auth-card">
+  <h3 class="text-center text-primary mb-3">Create Company & Admin</h3>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-2">
+      {{ form.company_name.label }} {{ form.company_name(class="form-control") }}
+    </div>
+    <div class="mb-2 row">
+      <div class="col">
+        {{ form.country.label }} {{ form.country(class="form-select") }}
+      </div>
+      <div class="col">
+        {{ form.currency.label }} {{ form.currency(class="form-select") }}
+      </div>
+    </div>
+    <hr>
+    <div class="mb-2">
+      {{ form.email.label }} {{ form.email(class="form-control") }}
+    </div>
+    <div class="mb-2">
+      {{ form.phone.label }} {{ form.phone(class="form-control") }}
+    </div>
+    <div class="mb-2">
+      {{ form.password.label }} {{ form.password(class="form-control") }}
+    </div>
+    <div class="d-grid">
+      {{ form.submit(class="btn btn-primary") }}
+    </div>
+  </form>
+  <p class="mt-3 text-center">
+    Already registered? <a href="{{ url_for('login') }}">Login</a>
+  </p>
+</div>
+{% endblock %}

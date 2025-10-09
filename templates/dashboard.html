@@ -1,0 +1,191 @@
+<!-- @ts-nocheck -->
+{% extends "base.html" %}
+{% block content %}
+
+<!-- DASHBOARD HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold text-primary">
+    <i class="bi bi-speedometer2 me-2"></i>Dashboard - {{ comp.name }}
+  </h2>
+  <span class="text-muted fs-6">{{ current_date }}</span>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <a href="{{ url_for('income_new') }}" class="text-decoration-none">
+      <div class="card shadow-sm border-0 summary-card bg-gradient bg-success text-white hover-scale">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h5>Total Income</h5>
+            <h3>{{ total_income }} {{ comp.currency }}</h3>
+          </div>
+          <i class="bi bi-cash-stack fs-1 opacity-75"></i>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-md-4">
+    <a href="{{ url_for('expense_new') }}" class="text-decoration-none">
+      <div class="card shadow-sm border-0 summary-card bg-gradient bg-danger text-white hover-scale">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h5>Total Expense</h5>
+            <h3>{{ total_expense }} {{ comp.currency }}</h3>
+          </div>
+          <i class="bi bi-credit-card fs-1 opacity-75"></i>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0 summary-card bg-gradient bg-primary text-white hover-scale">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <h5>Balance</h5>
+          <h3>{{ balance }} {{ comp.currency }}</h3>
+        </div>
+        <i class="bi bi-wallet2 fs-1 opacity-75"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECENT TRANSACTIONS -->
+<div class="row">
+  <div class="col-md-6 mb-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-success text-white fw-bold">
+        <i class="bi bi-arrow-up-circle me-2"></i>Recent Incomes
+      </div>
+      <div class="card-body p-0" style="max-height: 280px; overflow-y:auto;">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Title</th>
+              <th class="text-end">Amount</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inc in recent_incomes %}
+            <tr>
+              <td>{{ inc.title }}</td>
+              <td class="text-end fw-semibold text-success">{{ inc.amount }} {{ comp.currency }}</td>
+              <td>{{ inc.date.strftime('%d-%m-%Y') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-3">No income recorded</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-danger text-white fw-bold">
+        <i class="bi bi-arrow-down-circle me-2"></i>Recent Expenses
+      </div>
+      <div class="card-body p-0" style="max-height: 280px; overflow-y:auto;">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Title</th>
+              <th class="text-end">Amount</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for exp in recent_expenses %}
+            <tr>
+              <td>{{ exp.title }}</td>
+              <td class="text-end fw-semibold text-danger">{{ exp.amount }} {{ comp.currency }}</td>
+              <td>{{ exp.date.strftime('%d-%m-%Y') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-3">No expense recorded</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHART CARD -->
+<div class="card mt-4 shadow-sm border-0">
+  <div class="card-header bg-primary text-white fw-bold">
+    <i class="bi bi-bar-chart-line me-2"></i>Income vs Expense Overview
+  </div>
+  <div class="card-body">
+    <canvas id="incomeExpenseChart"
+            data-income="{{ total_income }}"
+            data-expense="{{ total_expense }}"
+            data-currency="{{ comp.currency }}"
+            height="120"></canvas>
+  </div>
+</div>
+
+<!-- STYLES -->
+<style>
+  .hover-scale {
+    transition: transform 0.2s ease-in-out;
+  }
+  .hover-scale:hover {
+    transform: scale(1.03);
+  }
+  .summary-card h3 {
+    font-weight: 700;
+  }
+</style>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('incomeExpenseChart');
+    if (!canvas) {
+        console.log("Canvas not found!");
+        return;
+    }
+
+    const totalIncome = parseFloat(canvas.dataset.income);
+    const totalExpense = parseFloat(canvas.dataset.expense);
+    const currency = canvas.dataset.currency;
+
+    console.log("Income value:", totalIncome);
+    console.log("Expense value:", totalExpense);
+    console.log("Currency:", currency);
+
+    if (isNaN(totalIncome) || isNaN(totalExpense)) {
+        console.error("Income or Expense is NaN. Check template variables.");
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Income', 'Expense'],
+            datasets: [{
+                label: 'Amount (' + currency + ')',
+                data: [totalIncome, totalExpense],
+                backgroundColor: ['#28a745', '#dc3545'],
+                borderRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
