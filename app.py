@@ -77,6 +77,35 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def company_settings():
+    # Only admin can change opening balance
+    if not current_user.is_admin():
+        flash('Only admin can edit settings', 'danger')
+        return redirect(url_for('dashboard'))
+
+    company = current_user.company
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        country = request.form.get('country')
+        currency = request.form.get('currency')
+        opening_balance = request.form.get('opening_balance')
+
+        try:
+            company.name = name
+            company.country = country
+            company.currency = currency
+            company.opening_balance = float(opening_balance)
+            db.session.commit()
+            flash('Settings updated successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Error updating settings: {}'.format(e), 'danger')
+
+    return render_template('settings.html', company=company)
+
 @app.route('/company/users')
 @login_required
 def company_users():
