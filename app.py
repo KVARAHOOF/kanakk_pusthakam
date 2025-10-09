@@ -6,6 +6,13 @@ from forms import LoginForm,  IncomeForm, ExpenseForm, RegisterForm, UserForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from io import BytesIO
+from flask import send_file
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -269,6 +276,103 @@ def reports():
     return render_template('reports.html', incomes=incomes, expenses=expenses,
                            total_income=total_income, total_expense=total_expense,
                            comp=comp, start=start, end=end)
+
+
+
+@app.route('/reports/pdf')
+@login_required
+def reports_pdf():
+    comp = current_user.company
+    start = request.args.get('start')
+    end = request.args.get('end')
+
+    incomes = Income.query.filter_by(company_id=comp.id)
+    expenses = Expense.query.filter_by(company_id=comp.id)
+    if start:
+        incomes = incomes.filter(Income.date >= start)
+        expenses = expenses.filter(Expense.date >= start)
+    if end:
+        incomes = incomes.filter(Income.date <= end)
+        expenses = expenses.filter(Expense.date <= end)
+
+    incomes = incomes.order_by(Income.date.desc()).all()
+    expenses = expenses.order_by(Expense.date.desc()).all()
+
+    total_income = sum(i.amount for i in incomes)
+    total_expense = sum(e.amount for e in expenses)
+    balance = comp.opening_balance + total_income - total_expense
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=40, bottomMargin=40, leftMargin=40, rightMargin=40)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # Header
+    title = Paragraph(f"<b>{comp.name}</b>", styles['Title'])
+    subtitle = Paragraph(f"Financial Report ({start or 'All'} to {end or 'All'})", styles['Heading2'])
+    elements += [title, subtitle, Spacer(1, 12)]
+
+    # Summary
+    summary_data = [
+        ["Opening Balance", f"{comp.opening_balance:.2f}"],
+        ["Total Income", f"{total_income:.2f}"],
+        ["Total Expense", f"{total_expense:.2f}"],
+        ["Final Balance", f"{balance:.2f}"]
+    ]
+    summary_table = Table(summary_data, colWidths=[3 * inch, 2 * inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+    ]))
+    elements += [Paragraph("<b>Summary</b>", styles['Heading3']), summary_table, Spacer(1, 20)]
+
+    # Income Table
+    elements.append(Paragraph("<b>Income</b>", styles['Heading3']))
+    if incomes:
+        inc_data = [["Date", "Title", "Amount"]]
+        for i in incomes:
+            inc_data.append([i.date.strftime("%Y-%m-%d"), i.title, f"{i.amount:.2f}"])
+        inc_table = Table(inc_data, colWidths=[1.5 * inch, 3 * inch, 1.5 * inch])
+        inc_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgreen),
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
+        ]))
+        elements.append(inc_table)
+    else:
+        elements.append(Paragraph("No income records found.", styles['Normal']))
+    elements.append(Spacer(1, 15))
+
+    # Expense Table
+    elements.append(Paragraph("<b>Expense</b>", styles['Heading3']))
+    if expenses:
+        exp_data = [["Date", "Title", "Amount"]]
+        for e in expenses:
+            exp_data.append([e.date.strftime("%Y-%m-%d"), e.title, f"{e.amount:.2f}"])
+        exp_table = Table(exp_data, colWidths=[1.5 * inch, 3 * inch, 1.5 * inch])
+        exp_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.salmon),
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
+        ]))
+        elements.append(exp_table)
+    else:
+        elements.append(Paragraph("No expense records found.", styles['Normal']))
+
+    # Footer
+    elements.append(Spacer(1, 25))
+    elements.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
+
+    # Build PDF
+    doc.build(elements)
+
+    buffer.seek(0)
+    filename = f"report_{comp.name.replace(' ', '_')}.pdf"
+    return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
 if __name__ == '__main__':
     create_tables()
