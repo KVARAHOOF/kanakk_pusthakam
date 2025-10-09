@@ -8,3 +8,4 @@ email-validator
 gunicorn
 pycountry
 werkzeug<3.0.0
+reportlab
