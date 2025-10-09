@@ -9,3 +9,4 @@ gunicorn
 pycountry
 werkzeug<3.0.0
 reportlab
+psycopg2-binary
