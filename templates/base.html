@@ -128,6 +128,26 @@
         .logout-btn:hover {
             background: rgba(255, 255, 255, 0.3);
         }
+
+        @media print {
+            .sidebar, .topbar, .btn, form {
+            display: none !important;
+            }
+            body {
+            background: white;
+            margin: 0;
+            padding: 0;
+            }
+            .content {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            }
+            table {
+            font-size: 12px;
+            }
+        }
+
     </style>
 </head>
 <body>
